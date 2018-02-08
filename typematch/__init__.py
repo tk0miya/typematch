@@ -4,7 +4,7 @@ __version__ = '1.0.0'
 
 
 import itertools
-from typing import Any
+from typing import Any, Union
 
 
 NoneType = type(None)
@@ -18,8 +18,11 @@ def typematch(subject: Any, typ: Any, allow_none=False) -> bool:
     try:
         if getattr(typ, '__module__', None) == 'typing':
             qualname = getattr(typ, '__qualname__', None)
+            name = getattr(typ, '__name__', None)
             if qualname and qualname in mapping:
                 return mapping[qualname](subject, typ, allow_none)
+            elif name and name in mapping:
+                return mapping[name](subject, typ, allow_none)
             else:
                 return mapping[str(typ.__class__)](subject, typ, allow_none)
         else:
@@ -44,6 +47,10 @@ def typematch_None(subject: Any, typ: Any, allow_none=False) -> bool:
 
 def typematch_Any(subject: Any, typ: Any, allow_none=False) -> bool:
     return True
+
+
+def typematch_AnyStr(subject: Any, typ: Any, allow_none=False) -> bool:
+    return typematch(subject, Union[bytes, str], allow_none)
 
 
 def typematch_Dict(subject: Any, typ: Any, allow_none=False) -> bool:
@@ -130,6 +137,7 @@ mapping = {
     None: typematch_None,
     NoneType: typematch_None,
     "typing.Any": typematch_Any,
+    "AnyStr": typematch_AnyStr,
     "<class 'typing.AnyMeta'>": typematch_Any,
     "Dict": typematch_Dict,
     "List": typematch_List,

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, AnyStr, Dict, List, Optional, Set, Text, Tuple, Union
 
 from typematch import typematch
 from typematch import UnsupportedType
@@ -236,6 +236,13 @@ def test_Any():
     assert typematch(None, Any, allow_none=True) is True
 
 
+def test_AnyStr():
+    assert typematch(1, AnyStr) is False
+    assert typematch('str', AnyStr) is True
+    assert typematch(b'str', AnyStr) is True
+    assert typematch(None, AnyStr) is False
+
+
 def test_Dict():
     assert typematch([], Dict) is False
     assert typematch({}, Dict[int, int]) is True
@@ -268,6 +275,13 @@ def test_Set():
     assert typematch({1, 2, 3}, Set[int]) is True
     assert typematch({'str'}, Set[int]) is False
     assert typematch({1, 2, '3'}, Set[int]) is False
+
+
+def test_Text():
+    assert typematch(1, Text) is False
+    assert typematch('str', Text) is True
+    assert typematch(b'str', Text) is False
+    assert typematch(None, Text) is False
 
 
 def test_Tuple():
