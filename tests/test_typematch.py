@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
+from typing import Any, Optional, Union
 
 from typematch import typematch
 from typematch import UnsupportedType
@@ -218,3 +219,31 @@ def test_None():
     assert typematch({'key': 'value'}, None) is False
     assert typematch(None, None) is True
     assert typematch(None, None, allow_none=True) is True
+
+
+def test_Any():
+    assert typematch(True, Any) is True
+    assert typematch(1, Any) is True
+    assert typematch(1.0, Any) is True
+    assert typematch([1, 2, 3], Any) is True
+    assert typematch((1, 2, 3), Any) is True
+    assert typematch(range(10), Any) is True
+    assert typematch('str', Any) is True
+    assert typematch(b'str', Any) is True
+    assert typematch({1, 2, 3}, Any) is True
+    assert typematch({'key': 'value'}, Any) is True
+    assert typematch(None, Any) is True
+    assert typematch(None, Any, allow_none=True) is True
+
+
+def test_Optional():
+    assert typematch(1, Optional[int]) is True
+    assert typematch(None, Optional[int]) is True
+    assert typematch('str', Optional[int]) is False
+
+
+def test_Union():
+    assert typematch(1, Union[int, str]) is True
+    assert typematch('str', Union[int, str]) is True
+    assert typematch(1.0, Union[int, str]) is False
+    assert typematch(None, Union[int, str]) is False
