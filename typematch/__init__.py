@@ -20,8 +20,11 @@ def typematch(subject: Any, typ: Any, allow_none=False) -> bool:
 def typematch_builtins(subject: Any, typ: Any, allow_none=False) -> bool:
     if subject is None and allow_none:
         return True
+    elif type(subject) == bool:
+        # To avoid bool values matching to int (because bool is a subclass of int)
+        return typ is bool
     else:
-        return type(subject) == typ
+        return issubclass(type(subject), typ)
 
 
 def typematch_None(subject: Any, typ: Any, allow_none=False) -> bool:
