@@ -1,0 +1,11 @@
+*.egg-info
+*.pyc
+*.swp
+
+.coverage
+.pytest_cache/
+.tox/
+bin/
+dist/
+include/
+lib/
