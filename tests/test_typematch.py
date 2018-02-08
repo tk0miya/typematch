@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
-from typing import Any, Optional, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from typematch import typematch
 from typematch import UnsupportedType
@@ -236,10 +236,51 @@ def test_Any():
     assert typematch(None, Any, allow_none=True) is True
 
 
+def test_Dict():
+    assert typematch([], Dict) is False
+    assert typematch({}, Dict[int, int]) is True
+    assert typematch({1: 2}, Dict[int, int]) is True
+    assert typematch({1: 2, 3: 4}, Dict[int, int]) is True
+    assert typematch({'1': 2}, Dict[int, int]) is False
+    assert typematch({1: '2'}, Dict[int, int]) is False
+    assert typematch({1: 2, 3: '4'}, Dict[int, int]) is False
+
+
+def test_List():
+    assert typematch({}, List) is False
+    assert typematch([], List[int]) is True
+    assert typematch([1], List[int]) is True
+    assert typematch([1, 2, 3], List[int]) is True
+    assert typematch(['str'], List[int]) is False
+    assert typematch([1, 2, '3'], List[int]) is False
+
+
 def test_Optional():
     assert typematch(1, Optional[int]) is True
     assert typematch(None, Optional[int]) is True
     assert typematch('str', Optional[int]) is False
+
+
+def test_Set():
+    assert typematch([], Set) is False
+    assert typematch(set(), Set[int]) is True
+    assert typematch({1}, Set[int]) is True
+    assert typematch({1, 2, 3}, Set[int]) is True
+    assert typematch({'str'}, Set[int]) is False
+    assert typematch({1, 2, '3'}, Set[int]) is False
+
+
+def test_Tuple():
+    assert typematch([], Tuple) is False
+    assert typematch(tuple(), Tuple) is True
+    assert typematch(tuple(), Tuple[int]) is False
+    assert typematch((1,), Tuple[int]) is True
+    assert typematch((1, 2, 3), Tuple[int]) is False
+    assert typematch(('str',), Tuple[int]) is False
+    assert typematch((1), Tuple[int, int]) is False
+    assert typematch((1, 2), Tuple[int, int]) is True
+    assert typematch((1, '2'), Tuple[int, int]) is False
+    assert typematch((1, 2, 3), Tuple[int, ...]) is True
 
 
 def test_Union():
