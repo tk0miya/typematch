@@ -18,6 +18,9 @@ with open('README.rst') as readme_file:
 
 
 extras_require = {
+    ':python_version<"3.5"': [
+        'typing'
+    ],
     'test': [
         'pytest',
         'flake8',
