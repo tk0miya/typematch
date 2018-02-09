@@ -3,8 +3,9 @@
 __version__ = '1.0.0'
 
 
+import collections.abc
 import itertools
-from typing import Any, Union
+from typing import Any, Callable, Union
 
 
 NoneType = type(None)
@@ -16,7 +17,8 @@ class UnsupportedType(Exception):
 
 def typematch(subject: Any, typ: Any, allow_none=False) -> bool:
     try:
-        if getattr(typ, '__module__', None) == 'typing':
+        modname = getattr(typ, '__module__', None)
+        if modname == 'typing':
             qualname = getattr(typ, '__qualname__', None)
             name = getattr(typ, '__name__', None)
             if qualname and qualname in mapping:
@@ -25,6 +27,9 @@ def typematch(subject: Any, typ: Any, allow_none=False) -> bool:
                 return mapping[name](subject, typ, allow_none)
             else:
                 return mapping[str(typ.__class__)](subject, typ, allow_none)
+        elif modname == 'collections.abc':
+            matcher = typematch_Generic(typ)
+            return matcher(subject, typ, allow_none)
         else:
             return mapping[typ](subject, typ, allow_none)
     except KeyError:
@@ -51,6 +56,16 @@ def typematch_Any(subject: Any, typ: Any, allow_none=False) -> bool:
 
 def typematch_AnyStr(subject: Any, typ: Any, allow_none=False) -> bool:
     return typematch(subject, Union[bytes, str], allow_none)
+
+
+def typematch_Generic(generic_type: Any) -> Callable[[Any, Any, bool], bool]:
+    def matcher(subject: Any, typ: Any, allow_none=False) -> bool:
+        if subject is None and allow_none:
+            return True
+        else:
+            return isinstance(subject, generic_type)
+
+    return matcher
 
 
 def typematch_Dict(subject: Any, typ: Any, allow_none=False) -> bool:
@@ -125,6 +140,7 @@ def typematch_Union_py35(subject: Any, typ: Any, allow_none=False) -> bool:
 
 
 mapping = {
+    # builtin types
     bool: typematch_builtins,
     int: typematch_builtins,
     float: typematch_builtins,
@@ -136,6 +152,8 @@ mapping = {
     dict: typematch_builtins,
     None: typematch_None,
     NoneType: typematch_None,
+
+    # typing
     "typing.Any": typematch_Any,
     "AnyStr": typematch_AnyStr,
     "<class 'typing.AnyMeta'>": typematch_Any,
@@ -145,4 +163,22 @@ mapping = {
     "Tuple": typematch_Tuple,
     "typing.Union": typematch_Union,
     "<class 'typing.UnionMeta'>": typematch_Union_py35,
+
+    # generics
+    "AbstractSet": typematch_Generic(collections.abc.Set),
+    "ByteString": typematch_Generic(collections.abc.ByteString),
+    "Container": typematch_Generic(collections.abc.Container),
+    "Hashable": typematch_Generic(collections.abc.Hashable),
+    "ItemsView": typematch_Generic(collections.abc.ItemsView),
+    "Iterable": typematch_Generic(collections.abc.Iterable),
+    "Iterator": typematch_Generic(collections.abc.Iterator),
+    "KeysView": typematch_Generic(collections.abc.KeysView),
+    "Mapping": typematch_Generic(collections.abc.Mapping),
+    "MappingView": typematch_Generic(collections.abc.MappingView),
+    "MutableMapping": typematch_Generic(collections.abc.MutableMapping),
+    "MutableSequence": typematch_Generic(collections.abc.MutableSequence),
+    "MutableSet": typematch_Generic(collections.abc.MutableSet),
+    "Sequence": typematch_Generic(collections.abc.Sequence),
+    "Sized": typematch_Generic(collections.abc.Sized),
+    "ValuesView": typematch_Generic(collections.abc.ValuesView),
 }
